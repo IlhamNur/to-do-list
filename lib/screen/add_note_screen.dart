@@ -1,22 +1,32 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_to_do_list/const/colors.dart';
-import 'package:flutter_to_do_list/data/firestor.dart';
+import 'package:flutter_to_do_list/data/firestore.dart';
 
-class Add_creen extends StatefulWidget {
-  const Add_creen({super.key});
+class AddScreen extends StatefulWidget {
+  const AddScreen({super.key});
 
   @override
-  State<Add_creen> createState() => _Add_creenState();
+  State<AddScreen> createState() => _AddScreenState();
 }
 
-class _Add_creenState extends State<Add_creen> {
-  final title = TextEditingController();
-  final subtitle = TextEditingController();
+class _AddScreenState extends State<AddScreen> {
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController subtitleController = TextEditingController();
 
-  FocusNode _focusNode1 = FocusNode();
-  FocusNode _focusNode2 = FocusNode();
-  int indexx = 0;
+  final FocusNode _focusNode1 = FocusNode();
+  final FocusNode _focusNode2 = FocusNode();
+
+  int selectedImageIndex = 0;
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    subtitleController.dispose();
+    _focusNode1.dispose();
+    _focusNode2.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,33 +35,39 @@ class _Add_creenState extends State<Add_creen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            title_widgets(),
+            titleWidget(),
             SizedBox(height: 20),
-            subtite_wedgite(),
+            subtitleWidget(),
             SizedBox(height: 20),
-            imagess(),
+            imageSelector(),
             SizedBox(height: 20),
-            button()
+            buttonRow(),
           ],
         ),
       ),
     );
   }
 
-  Widget button() {
+  Widget buttonRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: custom_green,
+            backgroundColor: customGreen,
             minimumSize: Size(170, 48),
           ),
-          onPressed: () {
-            Firestore_Datasource().AddNote(subtitle.text, title.text, indexx);
-            Navigator.pop(context);
+          onPressed: () async {
+            await FirestoreDatasource().addNote(
+              subtitleController.text,
+              titleController.text,
+              selectedImageIndex,
+            );
+            if (mounted) {
+              Navigator.pop(context);
+            }
           },
-          child: Text('add task'),
+          child: Text('Add Task'),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -67,8 +83,8 @@ class _Add_creenState extends State<Add_creen> {
     );
   }
 
-  Container imagess() {
-    return Container(
+  Widget imageSelector() {
+    return SizedBox(
       height: 180,
       child: ListView.builder(
         itemCount: 4,
@@ -77,7 +93,7 @@ class _Add_creenState extends State<Add_creen> {
           return GestureDetector(
             onTap: () {
               setState(() {
-                indexx = index;
+                selectedImageIndex = index;
               });
             },
             child: Padding(
@@ -87,14 +103,14 @@ class _Add_creenState extends State<Add_creen> {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     width: 2,
-                    color: indexx == index ? custom_green : Colors.grey,
+                    color: selectedImageIndex == index ? customGreen : Colors.grey,
                   ),
                 ),
                 width: 140,
                 margin: EdgeInsets.all(8),
                 child: Column(
                   children: [
-                    Image.asset('images/${index}.png'),
+                    Image.asset('images/$index.png'),
                   ],
                 ),
               ),
@@ -105,7 +121,7 @@ class _Add_creenState extends State<Add_creen> {
     );
   }
 
-  Widget title_widgets() {
+  Widget titleWidget() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Container(
@@ -114,48 +130,12 @@ class _Add_creenState extends State<Add_creen> {
           borderRadius: BorderRadius.circular(15),
         ),
         child: TextField(
-          controller: title,
+          controller: titleController,
           focusNode: _focusNode1,
           style: TextStyle(fontSize: 18, color: Colors.black),
           decoration: InputDecoration(
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-              hintText: 'title',
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                  color: Color(0xffc5c5c5),
-                  width: 2.0,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                  color: custom_green,
-                  width: 2.0,
-                ),
-              )),
-        ),
-      ),
-    );
-  }
-
-  Padding subtite_wedgite() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: TextField(
-          maxLines: 3,
-          controller: subtitle,
-          focusNode: _focusNode2,
-          style: TextStyle(fontSize: 18, color: Colors.black),
-          decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-            hintText: 'subtitle',
+            hintText: 'Title',
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(
@@ -166,7 +146,43 @@ class _Add_creenState extends State<Add_creen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(
-                color: custom_green,
+                color: customGreen,
+                width: 2.0,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget subtitleWidget() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: TextField(
+          maxLines: 3,
+          controller: subtitleController,
+          focusNode: _focusNode2,
+          style: TextStyle(fontSize: 18, color: Colors.black),
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+            hintText: 'Subtitle',
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: Color(0xffc5c5c5),
+                width: 2.0,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: customGreen,
                 width: 2.0,
               ),
             ),

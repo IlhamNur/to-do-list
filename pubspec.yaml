@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  intl: ^0.18.0
   firebase_auth: ^4.3.0
   cloud_firestore: ^4.5.0
   msh_checkbox: ^1.1.1 
@@ -40,6 +41,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
+  firebase_core: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,35 +1,40 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_to_do_list/widgets/task_widgets.dart';
+import '../data/firestore.dart';
 
-import '../data/firestor.dart';
-
-class Stream_note extends StatelessWidget {
-  bool done;
-  Stream_note(this.done, {super.key});
+class StreamNote extends StatelessWidget {
+  final bool done;
+  const StreamNote(this.done, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-        stream: Firestore_Datasource().stream(done),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return CircularProgressIndicator();
-          }
-          final noteslist = Firestore_Datasource().getNotes(snapshot);
-          return ListView.builder(
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final note = noteslist[index];
-              return Dismissible(
-                  key: UniqueKey(),
-                  onDismissed: (direction) {
-                    Firestore_Datasource().delet_note(note.id);
-                  },
-                  child: Task_Widget(note));
-            },
-            itemCount: noteslist.length,
-          );
-        });
+      stream: FirestoreDatasource().streamNotes(done),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text("No tasks available"));
+        }
+
+        final notesList = FirestoreDatasource().getNotes(snapshot);
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: notesList.length,
+          itemBuilder: (context, index) {
+            final note = notesList[index];
+            return Dismissible(
+              key: ValueKey(note.id),
+              onDismissed: (direction) {
+                FirestoreDatasource().deleteNote(note.id);
+              },
+              child: TaskWidget(note),
+            );
+          },
+        );
+      },
+    );
   }
 }

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_to_do_list/const/colors.dart';
-import 'package:flutter_to_do_list/data/firestor.dart';
+import 'package:flutter_to_do_list/data/firestore.dart';
 import 'package:flutter_to_do_list/model/notes_model.dart';
 import 'package:flutter_to_do_list/screen/edit_screen.dart';
 
-class Task_Widget extends StatefulWidget {
-  Note _note;
-  Task_Widget(this._note, {super.key});
+class TaskWidget extends StatefulWidget {
+  final Note note;
+  const TaskWidget(this.note, {super.key});
 
   @override
-  State<Task_Widget> createState() => _Task_WidgetState();
+  State<TaskWidget> createState() => _TaskWidgetState();
 }
 
-class _Task_WidgetState extends State<Task_Widget> {
+class _TaskWidgetState extends State<TaskWidget> {
+  final FirestoreDatasource firestore = FirestoreDatasource();
+
   @override
   Widget build(BuildContext context) {
-    bool isDone = widget._note.isDon;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       child: Container(
@@ -29,7 +30,7 @@ class _Task_WidgetState extends State<Task_Widget> {
               color: Colors.grey.withOpacity(0.2),
               spreadRadius: 5,
               blurRadius: 7,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -37,47 +38,44 @@ class _Task_WidgetState extends State<Task_Widget> {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Row(
             children: [
-              // image
-              imageee(),
-              SizedBox(width: 25),
-              // title and subtitle
+              // Image
+              taskImage(),
+              const SizedBox(width: 25),
+              // Title and subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          widget._note.title,
-                          style: TextStyle(
+                          widget.note.title,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Checkbox(
-                          activeColor: custom_green,
-                          value: isDone,
+                          activeColor: customGreen,
+                          value: widget.note.isDone,
                           onChanged: (value) {
-                            setState(() {
-                              isDone = !isDone;
-                            });
-                            Firestore_Datasource()
-                                .isdone(widget._note.id, isDone);
+                            firestore.updateNoteStatus(widget.note.id, value ?? false);
                           },
-                        )
+                        ),
                       ],
                     ),
                     Text(
-                      widget._note.subtitle,
+                      widget.note.subtitle,
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade400),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade400,
+                      ),
                     ),
-                    Spacer(),
-                    edit_time()
+                    const Spacer(),
+                    editTime(),
                   ],
                 ),
               ),
@@ -88,7 +86,7 @@ class _Task_WidgetState extends State<Task_Widget> {
     );
   }
 
-  Widget edit_time() {
+  Widget editTime() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -97,21 +95,18 @@ class _Task_WidgetState extends State<Task_Widget> {
             width: 90,
             height: 28,
             decoration: BoxDecoration(
-              color: custom_green,
+              color: customGreen,
               borderRadius: BorderRadius.circular(18),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Row(
                 children: [
                   Image.asset('images/icon_time.png'),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Text(
-                    widget._note.time,
-                    style: TextStyle(
+                    widget.note.time,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -121,31 +116,28 @@ class _Task_WidgetState extends State<Task_Widget> {
               ),
             ),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           GestureDetector(
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => Edit_Screen(widget._note),
+                builder: (context) => EditScreen(widget.note),
               ));
             },
             child: Container(
               width: 90,
               height: 28,
               decoration: BoxDecoration(
-                color: Color(0xffE2F6F1),
+                color: const Color(0xffE2F6F1),
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Row(
                   children: [
                     Image.asset('images/icon_edit.png'),
-                    SizedBox(width: 10),
-                    Text(
-                      'edit',
+                    const SizedBox(width: 10),
+                    const Text(
+                      'Edit',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -161,14 +153,14 @@ class _Task_WidgetState extends State<Task_Widget> {
     );
   }
 
-  Widget imageee() {
+  Widget taskImage() {
     return Container(
       height: 130,
       width: 100,
       decoration: BoxDecoration(
         color: Colors.white,
         image: DecorationImage(
-          image: AssetImage('images/${widget._note.image}.png'),
+          image: AssetImage('images/${widget.note.image}.png'),
           fit: BoxFit.cover,
         ),
       ),

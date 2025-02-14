@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_to_do_list/screen/SingUP.dart';
+import 'package:flutter_to_do_list/screen/sign_up.dart'; // Perbaikan typo dari "SingUP.dart"
 import 'package:flutter_to_do_list/screen/login.dart';
 
-class Auth_Page extends StatefulWidget {
-  Auth_Page({super.key});
+class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
 
   @override
-  State<Auth_Page> createState() => _Auth_PageState();
+  State<AuthPage> createState() => _AuthPageState();
 }
 
-class _Auth_PageState extends State<Auth_Page> {
-  bool a = true;
-  void to() {
+class _AuthPageState extends State<AuthPage> {
+  bool isLoginScreen = true;
+
+  void toggleScreen() {
     setState(() {
-      a = !a;
+      isLoginScreen = !isLoginScreen;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (a) {
-      return LogIN_Screen(to);
-    } else {
-      return SignUp_Screen(to);
-    }
+    return isLoginScreen ? LoginScreen(toggleScreen) : SignUpScreen(toggleScreen);
   }
 }
